@@ -1,9 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller()
 export class AppController {
-  @Get()
-  getHello(): string {
-    return 'Hello world';
+  @MessagePattern({ cmd: 'vehicles.hello' })
+  getHello(@Payload() _: unknown) {
+    return {
+      message: 'Hello world',
+      service: 'vehicle-service',
+    };
   }
 }

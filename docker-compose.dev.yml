@@ -1,0 +1,68 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-dev
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  user-service:
+    image: node:22-alpine
+    container_name: user-service-dev
+    working_dir: /app
+    command: sh -c "npm install && npm run start:dev"
+    env_file:
+      - ./user-service/.env
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./user-service:/app
+      - user_service_node_modules:/app/node_modules
+
+  vehicle-service:
+    image: node:22-alpine
+    container_name: vehicle-service-dev
+    working_dir: /app
+    command: sh -c "npm install && npm run start:dev"
+    env_file:
+      - ./vehicle-service/.env
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./vehicle-service:/app
+      - vehicle_service_node_modules:/app/node_modules
+
+  frontend:
+    image: node:22-alpine
+    container_name: frontend-dev
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --hostname 0.0.0.0 --port ${PORT:-3000}"
+    env_file:
+      - ./frontend/.env
+    environment:
+      WATCHPACK_POLLING: "true"
+    depends_on:
+      - user-service
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+
+volumes:
+  user_service_node_modules:
+  vehicle_service_node_modules:
+  frontend_node_modules:
