@@ -2,6 +2,7 @@
 
 RabbitStack is a small containerized stack with:
 
+- `nginx` - reverse proxy and public entrypoint
 - `frontend` - Next.js application
 - `user-service` - NestJS HTTP entrypoint
 - `vehicle-service` - NestJS RabbitMQ microservice
@@ -14,6 +15,7 @@ The `user-service` exposes HTTP endpoints and communicates with `vehicle-service
 - `frontend/` - Next.js frontend
 - `user-service/` - main backend HTTP service
 - `vehicle-service/` - backend microservice connected through RabbitMQ
+- `nginx/` - reverse proxy configuration
 - `docker-compose.yml` - production-style stack
 - `docker-compose.dev.yml` - development stack with hot reload
 
@@ -62,6 +64,11 @@ The `/vehicles/hello` endpoint sends a RabbitMQ message from `user-service` to `
 
 Use the main compose file for a production-style containerized run.
 
+In production mode, `nginx` is the single public entrypoint:
+
+- `/` -> `frontend`
+- `/api/*` -> `user-service`
+
 ### Start
 
 ```bash
@@ -82,9 +89,12 @@ docker compose down
 
 ### Notes
 
+- Public app URL: `http://localhost`
+- Public API example: `http://localhost/api/vehicles/hello`
 - `frontend` is built as a standalone Next.js app for a smaller runtime container.
 - `vehicle-service` does not expose an HTTP port. It runs only as a RabbitMQ microservice.
 - `user-service` is the public backend entrypoint inside this stack.
+- `nginx` forwards `/` to the frontend container and `/api/*` to the user-service container.
 - For AWS EC2 deployment, you typically run this compose stack on a single VM with multiple containers.
 
 ## Useful Commands

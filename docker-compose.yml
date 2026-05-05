@@ -1,4 +1,15 @@
 services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: nginx
+    depends_on:
+      - frontend
+      - user-service
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -20,8 +31,6 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-    ports:
-      - "3001:3001"
 
   vehicle-service:
     build:
@@ -41,5 +50,3 @@ services:
       - ./frontend/.env
     depends_on:
       - user-service
-    ports:
-      - "3000:3000"
