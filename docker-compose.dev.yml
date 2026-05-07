@@ -11,6 +11,23 @@ services:
       timeout: 5s
       retries: 10
 
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres-dev
+    environment:
+      POSTGRES_DB: rabbitstack
+      POSTGRES_USER: rabbitstack
+      POSTGRES_PASSWORD: rabbitstack
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rabbitstack -d rabbitstack"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   user-service:
     image: node:22-alpine
     container_name: user-service-dev
@@ -21,6 +38,8 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: "true"
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     ports:
@@ -39,6 +58,8 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: "true"
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     volumes:
@@ -63,6 +84,7 @@ services:
       - frontend_node_modules:/app/node_modules
 
 volumes:
+  postgres_dev_data:
   user_service_node_modules:
   vehicle_service_node_modules:
   frontend_node_modules:
