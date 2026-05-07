@@ -7,8 +7,9 @@ RabbitStack is a small containerized stack with:
 - `user-service` - NestJS HTTP entrypoint
 - `vehicle-service` - NestJS RabbitMQ microservice
 - `rabbitmq` - message broker used for inter-service communication
+- `postgres` - shared database used by backend services
 
-The `user-service` exposes HTTP endpoints and communicates with `vehicle-service` through RabbitMQ.
+The `user-service` exposes HTTP endpoints and communicates with `vehicle-service` through RabbitMQ. Both backend services also connect to the same PostgreSQL database container.
 
 ## Project Structure
 
@@ -52,6 +53,7 @@ docker compose -f docker-compose.dev.yml down -v
 - Frontend: `http://localhost:3000`
 - User service: `http://localhost:3001`
 - RabbitMQ management UI: `http://localhost:15672`
+- PostgreSQL: `localhost:5432`
 
 ### Example Endpoints
 
@@ -95,6 +97,7 @@ docker compose down
 - `vehicle-service` does not expose an HTTP port. It runs only as a RabbitMQ microservice.
 - `user-service` is the public backend entrypoint inside this stack.
 - `nginx` forwards `/` to the frontend container and `/api/*` to the user-service container.
+- `postgres` is started together with the rest of the stack and is shared by both backend services.
 - For AWS EC2 deployment, you typically run this compose stack on a single VM with multiple containers.
 
 ## Useful Commands

@@ -22,6 +22,23 @@ services:
       timeout: 5s
       retries: 10
 
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_DB: rabbitstack
+      POSTGRES_USER: rabbitstack
+      POSTGRES_PASSWORD: rabbitstack
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rabbitstack -d rabbitstack"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   user-service:
     build:
       context: ./user-service
@@ -29,6 +46,8 @@ services:
     env_file:
       - ./user-service/.env
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
 
@@ -39,6 +58,8 @@ services:
     env_file:
       - ./vehicle-service/.env
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
 
@@ -50,3 +71,6 @@ services:
       - ./frontend/.env
     depends_on:
       - user-service
+
+volumes:
+  postgres_data:
