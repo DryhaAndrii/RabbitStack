@@ -1,0 +1,37 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      EC2_APP_DIR: /home/ubuntu/RabbitStack
+
+    steps:
+      - name: Configure SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "${{ secrets.EC2_PORT }}" "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy application
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.EC2_PORT }}" "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}" <<EOF
+          set -e
+          cd "${EC2_APP_DIR}"
+          git fetch origin
+          git checkout main
+          git pull --ff-only origin main
+          sudo docker compose up -d --build
+          EOF
