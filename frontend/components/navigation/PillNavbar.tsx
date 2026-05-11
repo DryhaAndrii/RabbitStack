@@ -208,16 +208,16 @@ const PillNavbar: React.FC<PillNavProps> = ({
     onMobileMenuClick?.();
   };
 
-  const cssVars = {
-    ['--nav-shell' as const]: shellColor,
-    ['--pill-bg' as const]: pillColor,
-    ['--hover-text' as const]: hoveredPillTextColor,
-    ['--pill-text' as const]: pillTextColor,
-    ['--active-dot' as const]: activeDotColor,
-    ['--nav-h' as const]: '48px',
-    ['--pill-pad-x' as const]: '18px',
-    ['--pill-gap' as const]: '6px',
-  } satisfies React.CSSProperties;
+  const cssVars: React.CSSProperties & Record<`--${string}`, string> = {
+    "--nav-shell": shellColor,
+    "--pill-bg": pillColor,
+    "--hover-text": hoveredPillTextColor,
+    "--pill-text": pillTextColor,
+    "--active-dot": activeDotColor,
+    "--nav-h": "48px",
+    "--pill-pad-x": "18px",
+    "--pill-gap": "6px",
+  };
 
   const containerClasses = [
     'w-full md:w-max',
