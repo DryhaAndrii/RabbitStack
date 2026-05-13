@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import React, { useEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
+import Link from "next/link";
+import React, { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
 
 export type PillNavItem = {
   label: string;
@@ -25,23 +25,23 @@ export interface PillNavProps {
 }
 
 const isExternalLink = (href: string) =>
-  href.startsWith('http://') ||
-  href.startsWith('https://') ||
-  href.startsWith('//') ||
-  href.startsWith('mailto:') ||
-  href.startsWith('tel:') ||
-  href.startsWith('#');
+  href.startsWith("http://") ||
+  href.startsWith("https://") ||
+  href.startsWith("//") ||
+  href.startsWith("mailto:") ||
+  href.startsWith("tel:") ||
+  href.startsWith("#");
 
 const PillNavbar: React.FC<PillNavProps> = ({
   items,
   activeHref,
-  className = '',
-  ease = 'power3.out',
-  shellColor = 'rgba(9, 12, 22, 0.18)',
-  pillColor = 'rgba(15, 23, 42, 0.72)',
-  hoveredPillTextColor = '#f8fafc',
-  pillTextColor = 'rgba(226, 232, 240, 0.88)',
-  activeDotColor = 'rgba(125, 211, 252, 0.95)',
+  className = "",
+  ease = "power3.out",
+  shellColor = "rgba(9, 12, 22, 0.18)",
+  pillColor = "rgba(15, 23, 42, 0.72)",
+  hoveredPillTextColor = "#f8fafc",
+  pillTextColor = "rgba(226, 232, 240, 0.88)",
+  activeDotColor = "rgba(125, 211, 252, 0.95)",
   onMobileMenuClick,
   initialLoadAnimation = true,
 }) => {
@@ -63,9 +63,8 @@ const PillNavbar: React.FC<PillNavProps> = ({
         const { width: w, height: h } = rect;
         const R = ((w * w) / 4 + h * h) / (2 * h);
         const D = Math.ceil(2 * R) + 2;
-        const delta = Math.ceil(
-          R - Math.sqrt(Math.max(0, R * R - (w * w) / 4)),
-        ) + 1;
+        const delta =
+          Math.ceil(R - Math.sqrt(Math.max(0, R * R - (w * w) / 4))) + 1;
         const originY = D - delta;
 
         circle.style.width = `${D}px`;
@@ -78,8 +77,8 @@ const PillNavbar: React.FC<PillNavProps> = ({
           transformOrigin: `50% ${originY}px`,
         });
 
-        const label = pill.querySelector<HTMLElement>('.pill-label');
-        const labelHover = pill.querySelector<HTMLElement>('.pill-label-hover');
+        const label = pill.querySelector<HTMLElement>(".pill-label");
+        const labelHover = pill.querySelector<HTMLElement>(".pill-label-hover");
 
         if (label) gsap.set(label, { y: 0 });
         if (labelHover) gsap.set(labelHover, { y: h + 12, opacity: 0 });
@@ -93,19 +92,23 @@ const PillNavbar: React.FC<PillNavProps> = ({
 
         tl.to(
           circle,
-          { scale: 1.18, xPercent: -50, duration: 2, ease, overwrite: 'auto' },
+          { scale: 1.18, xPercent: -50, duration: 2, ease, overwrite: "auto" },
           0,
         );
 
         if (label) {
-          tl.to(label, { y: -(h + 8), duration: 2, ease, overwrite: 'auto' }, 0);
+          tl.to(
+            label,
+            { y: -(h + 8), duration: 2, ease, overwrite: "auto" },
+            0,
+          );
         }
 
         if (labelHover) {
           gsap.set(labelHover, { y: Math.ceil(h + 100), opacity: 0 });
           tl.to(
             labelHover,
-            { y: 0, opacity: 1, duration: 2, ease, overwrite: 'auto' },
+            { y: 0, opacity: 1, duration: 2, ease, overwrite: "auto" },
             0,
           );
         }
@@ -117,15 +120,15 @@ const PillNavbar: React.FC<PillNavProps> = ({
     layout();
 
     const onResize = () => layout();
-    window.addEventListener('resize', onResize);
+    window.addEventListener("resize", onResize);
 
     if (document.fonts) {
-      document.fonts.ready.then(layout).catch(() => { });
+      document.fonts.ready.then(layout).catch(() => {});
     }
 
     const menu = mobileMenuRef.current;
     if (menu) {
-      gsap.set(menu, { visibility: 'hidden', opacity: 0, y: 0 });
+      gsap.set(menu, { visibility: "hidden", opacity: 0, y: 0 });
     }
 
     const navItems = navItemsRef.current;
@@ -140,7 +143,7 @@ const PillNavbar: React.FC<PillNavProps> = ({
     }
 
     return () => {
-      window.removeEventListener('resize', onResize);
+      window.removeEventListener("resize", onResize);
       tlRefs.current.forEach((tl) => tl?.kill());
       activeTweenRefs.current.forEach((tween) => tween?.kill());
     };
@@ -153,7 +156,7 @@ const PillNavbar: React.FC<PillNavProps> = ({
     activeTweenRefs.current[i] = tl.tweenTo(tl.duration(), {
       duration: 0.3,
       ease,
-      overwrite: 'auto',
+      overwrite: "auto",
     });
   };
 
@@ -164,7 +167,7 @@ const PillNavbar: React.FC<PillNavProps> = ({
     activeTweenRefs.current[i] = tl.tweenTo(0, {
       duration: 0.2,
       ease,
-      overwrite: 'auto',
+      overwrite: "auto",
     });
   };
 
@@ -176,7 +179,7 @@ const PillNavbar: React.FC<PillNavProps> = ({
     const menu = mobileMenuRef.current;
 
     if (hamburger) {
-      const lines = hamburger.querySelectorAll('.hamburger-line');
+      const lines = hamburger.querySelectorAll(".hamburger-line");
       if (nextState) {
         gsap.to(lines[0], { rotation: 45, y: 3, duration: 0.25, ease });
         gsap.to(lines[1], { rotation: -45, y: -3, duration: 0.25, ease });
@@ -188,7 +191,7 @@ const PillNavbar: React.FC<PillNavProps> = ({
 
     if (menu) {
       if (nextState) {
-        gsap.set(menu, { visibility: 'visible' });
+        gsap.set(menu, { visibility: "visible" });
         gsap.fromTo(
           menu,
           { opacity: 0, y: 10 },
@@ -200,7 +203,7 @@ const PillNavbar: React.FC<PillNavProps> = ({
           y: 10,
           duration: 0.2,
           ease,
-          onComplete: () => gsap.set(menu, { visibility: 'hidden' }),
+          onComplete: () => gsap.set(menu, { visibility: "hidden" }),
         });
       }
     }
@@ -220,18 +223,18 @@ const PillNavbar: React.FC<PillNavProps> = ({
   };
 
   const containerClasses = [
-    'w-full md:w-max',
-    'flex items-center justify-between md:justify-start',
+    "w-full md:w-max",
+    "flex items-center justify-between md:justify-start",
     className,
   ]
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 
   const basePillClasses =
-    'relative inline-flex h-full items-center justify-center overflow-hidden rounded-none px-0 text-sm font-semibold uppercase tracking-[0.22em] no-underline transition-colors duration-200 whitespace-nowrap';
+    "relative inline-flex h-full items-center justify-center overflow-hidden rounded-none px-0 text-sm font-semibold uppercase tracking-[0.22em] no-underline transition-colors duration-200 whitespace-nowrap";
 
   const shellClasses =
-    'relative hidden md:flex items-center rounded-none border border-white/10 bg-transparent p-1 shadow-[0_16px_40px_rgba(2,6,23,0.28)] backdrop-blur-xl h-full';
+    "relative hidden md:flex items-center rounded-none border border-white/10 bg-transparent p-1 shadow-[0_16px_40px_rgba(2,6,23,0.28)] backdrop-blur-xl h-full";
 
   const renderNavLink = (
     item: PillNavItem,
@@ -279,30 +282,30 @@ const PillNavbar: React.FC<PillNavProps> = ({
         <div ref={navItemsRef} className={shellClasses}>
           <div
             className="pointer-events-none absolute inset-0 rounded-none"
-            style={{ background: 'var(--nav-shell)' }}
+            style={{ background: "var(--nav-shell)" }}
             aria-hidden="true"
           />
           <ul
             role="menubar"
             className="relative z-[1] m-0 flex h-full list-none items-stretch p-0"
-            style={{ gap: 'var(--pill-gap)' }}
+            style={{ gap: "var(--pill-gap)" }}
           >
             {items.map((item, i) => {
               const isActive = activeHref === item.href;
 
               const pillStyle: React.CSSProperties = {
                 background: isActive
-                  ? 'linear-gradient(180deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.94) 100%)'
-                  : 'var(--pill-bg)',
-                color: 'var(--pill-text)',
-                paddingLeft: 'var(--pill-pad-x)',
-                paddingRight: 'var(--pill-pad-x)',
+                  ? "linear-gradient(180deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.94) 100%)"
+                  : "var(--pill-bg)",
+                color: "var(--pill-text)",
+                paddingLeft: "var(--pill-pad-x)",
+                paddingRight: "var(--pill-pad-x)",
                 border: isActive
-                  ? '1px solid rgba(125, 211, 252, 0.22)'
-                  : '1px solid rgba(255,255,255,0.06)',
+                  ? "1px solid rgba(125, 211, 252, 0.22)"
+                  : "1px solid rgba(255,255,255,0.06)",
                 boxShadow: isActive
-                  ? '0 0 0 1px rgba(125, 211, 252, 0.08), 0 10px 30px rgba(2, 6, 23, 0.35)'
-                  : 'none',
+                  ? "0 0 0 1px rgba(125, 211, 252, 0.08), 0 10px 30px rgba(2, 6, 23, 0.35)"
+                  : "none",
               };
 
               const pillContent = (
@@ -311,8 +314,8 @@ const PillNavbar: React.FC<PillNavProps> = ({
                     className="hover-circle pointer-events-none absolute bottom-0 left-1/2 z-[1] block rounded-none"
                     style={{
                       background:
-                        'linear-gradient(180deg, rgba(51, 65, 85, 0.92) 0%, rgba(15, 23, 42, 0.98) 100%)',
-                      willChange: 'transform',
+                        "linear-gradient(180deg, rgba(51, 65, 85, 0.92) 0%, rgba(15, 23, 42, 0.98) 100%)",
+                      willChange: "transform",
                     }}
                     aria-hidden="true"
                     ref={(el) => {
@@ -322,15 +325,15 @@ const PillNavbar: React.FC<PillNavProps> = ({
                   <span className="label-stack relative z-[2] inline-block leading-[1]">
                     <span
                       className="pill-label relative z-[2] inline-block leading-[1]"
-                      style={{ willChange: 'transform' }}
+                      style={{ willChange: "transform" }}
                     >
                       {item.label}
                     </span>
                     <span
                       className="pill-label-hover absolute left-0 top-0 z-[3] inline-block"
                       style={{
-                        color: 'var(--hover-text)',
-                        willChange: 'transform, opacity',
+                        color: "var(--hover-text)",
+                        willChange: "transform, opacity",
                       }}
                       aria-hidden="true"
                     >
@@ -341,8 +344,8 @@ const PillNavbar: React.FC<PillNavProps> = ({
                     <span
                       className="absolute -bottom-[5px] left-1/2 z-[4] h-2.5 w-2.5 -translate-x-1/2 rounded-none"
                       style={{
-                        background: 'var(--active-dot)',
-                        boxShadow: '0 0 18px rgba(125, 211, 252, 0.6)',
+                        background: "var(--active-dot)",
+                        boxShadow: "0 0 18px rgba(125, 211, 252, 0.6)",
                       }}
                       aria-hidden="true"
                     />
@@ -397,12 +400,12 @@ const PillNavbar: React.FC<PillNavProps> = ({
               const isActive = activeHref === item.href;
               const mobileStyle: React.CSSProperties = {
                 background: isActive
-                  ? 'linear-gradient(180deg, rgba(30,41,59,0.88) 0%, rgba(15,23,42,0.96) 100%)'
-                  : 'rgba(15, 23, 42, 0.72)',
-                color: isActive ? '#f8fafc' : 'rgba(226, 232, 240, 0.88)',
+                  ? "linear-gradient(180deg, rgba(30,41,59,0.88) 0%, rgba(15,23,42,0.96) 100%)"
+                  : "rgba(15, 23, 42, 0.72)",
+                color: isActive ? "#f8fafc" : "rgba(226, 232, 240, 0.88)",
                 border: isActive
-                  ? '1px solid rgba(125, 211, 252, 0.25)'
-                  : '1px solid rgba(255,255,255,0.06)',
+                  ? "1px solid rgba(125, 211, 252, 0.25)"
+                  : "1px solid rgba(255,255,255,0.06)",
               };
 
               return (
@@ -410,7 +413,7 @@ const PillNavbar: React.FC<PillNavProps> = ({
                   {renderNavLink(
                     item,
                     item.label,
-                    'block rounded-none px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] no-underline',
+                    "block rounded-none px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] no-underline",
                     mobileStyle,
                     () => setIsMobileMenuOpen(false),
                   )}
