@@ -49,6 +49,7 @@ const mockVehicles = [
 
 export default function Overview() {
 
+
     return (
         <div className="h-[400px] w-full flex  gap-4 flex-col">
             <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
@@ -60,6 +61,7 @@ export default function Overview() {
                         Recent users
                     </h1>
                     <AnimatedList
+                        
                         items={mockUsers}
                         onItemSelect={(item, index) => console.log(item, index)}
                         showGradients
@@ -79,9 +81,7 @@ export default function Overview() {
                         enableArrowNavigation
                         displayScrollbar
                     />
-                </div></div>
-
-
-
+                </div>
+            </div>
         </div>)
 }

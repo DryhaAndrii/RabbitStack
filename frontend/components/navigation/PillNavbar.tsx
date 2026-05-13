@@ -228,10 +228,10 @@ const PillNavbar: React.FC<PillNavProps> = ({
     .join(' ');
 
   const basePillClasses =
-    'relative inline-flex h-full items-center justify-center overflow-hidden rounded-full px-0 text-sm font-semibold uppercase tracking-[0.22em] no-underline transition-colors duration-200 whitespace-nowrap';
+    'relative inline-flex h-full items-center justify-center overflow-hidden rounded-none px-0 text-sm font-semibold uppercase tracking-[0.22em] no-underline transition-colors duration-200 whitespace-nowrap';
 
   const shellClasses =
-    'relative hidden md:flex items-center rounded-full border border-white/10 bg-transparent p-1 shadow-[0_16px_40px_rgba(2,6,23,0.28)] backdrop-blur-xl h-full';
+    'relative hidden md:flex items-center rounded-none border border-white/10 bg-transparent p-1 shadow-[0_16px_40px_rgba(2,6,23,0.28)] backdrop-blur-xl h-full';
 
   const renderNavLink = (
     item: PillNavItem,
@@ -278,7 +278,7 @@ const PillNavbar: React.FC<PillNavProps> = ({
       <nav className={containerClasses} aria-label="Primary" style={cssVars}>
         <div ref={navItemsRef} className={shellClasses}>
           <div
-            className="pointer-events-none absolute inset-0 rounded-full"
+            className="pointer-events-none absolute inset-0 rounded-none"
             style={{ background: 'var(--nav-shell)' }}
             aria-hidden="true"
           />
@@ -308,7 +308,7 @@ const PillNavbar: React.FC<PillNavProps> = ({
               const pillContent = (
                 <>
                   <span
-                    className="hover-circle pointer-events-none absolute bottom-0 left-1/2 z-[1] block rounded-full"
+                    className="hover-circle pointer-events-none absolute bottom-0 left-1/2 z-[1] block rounded-none"
                     style={{
                       background:
                         'linear-gradient(180deg, rgba(51, 65, 85, 0.92) 0%, rgba(15, 23, 42, 0.98) 100%)',
@@ -339,7 +339,7 @@ const PillNavbar: React.FC<PillNavProps> = ({
                   </span>
                   {isActive ? (
                     <span
-                      className="absolute -bottom-[5px] left-1/2 z-[4] h-2.5 w-2.5 -translate-x-1/2 rounded-full"
+                      className="absolute -bottom-[5px] left-1/2 z-[4] h-2.5 w-2.5 -translate-x-1/2 rounded-none"
                       style={{
                         background: 'var(--active-dot)',
                         boxShadow: '0 0 18px rgba(125, 211, 252, 0.6)',
@@ -376,12 +376,12 @@ const PillNavbar: React.FC<PillNavProps> = ({
           onClick={toggleMobileMenu}
           aria-label="Toggle menu"
           aria-expanded={isMobileMenuOpen}
-          className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-slate-950/45 backdrop-blur-xl md:hidden"
+          className="relative flex h-12 w-12 items-center justify-center rounded-none border border-white/10 bg-slate-950/45 backdrop-blur-xl md:hidden"
         >
           <span className="sr-only">Toggle menu</span>
           <span className="flex flex-col items-center justify-center gap-1">
-            <span className="hamburger-line h-0.5 w-4 rounded bg-slate-100" />
-            <span className="hamburger-line h-0.5 w-4 rounded bg-slate-100" />
+            <span className="hamburger-line h-0.5 w-4 rounded-none bg-slate-100" />
+            <span className="hamburger-line h-0.5 w-4 rounded-none bg-slate-100" />
           </span>
         </button>
       </nav>
@@ -391,7 +391,7 @@ const PillNavbar: React.FC<PillNavProps> = ({
         className="absolute left-0 right-0 top-16 z-[998] md:hidden"
         style={cssVars}
       >
-        <div className="rounded-[1.75rem] border border-white/10 bg-slate-950/60 p-2 shadow-[0_20px_50px_rgba(2,6,23,0.38)] backdrop-blur-2xl">
+        <div className="rounded-none border border-white/10 bg-slate-950/60 p-2 shadow-[0_20px_50px_rgba(2,6,23,0.38)] backdrop-blur-2xl">
           <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {items.map((item) => {
               const isActive = activeHref === item.href;
@@ -410,7 +410,7 @@ const PillNavbar: React.FC<PillNavProps> = ({
                   {renderNavLink(
                     item,
                     item.label,
-                    'block rounded-full px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] no-underline',
+                    'block rounded-none px-4 py-3 text-sm font-semibold uppercase tracking-[0.2em] no-underline',
                     mobileStyle,
                     () => setIsMobileMenuOpen(false),
                   )}

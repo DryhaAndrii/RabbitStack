@@ -1,6 +1,6 @@
 'use client';
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
-import BorderGlow from './GlowBorder';
+
 
 type GlassContainerProps = {
   children: ReactNode;
@@ -16,32 +16,21 @@ export default function GlassContainer({
   className,
   ...props
 }: GlassContainerProps) {
-  return (
-    <BorderGlow
-      edgeSensitivity={30}
-      glowColor="40 80 80"
-      backgroundColor="#120f177a"
-      borderRadius={28}
-      glowRadius={40}
-      glowIntensity={1}
-      coneSpread={25}
-      animated={false}
-      colors={['#c084fc', '#f472b6', '#38bdf8']}
-    >
-      <div
-        className={joinClasses(
-          "size-full  p-8 text-zinc-100 sm:p-12",
-          className,
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    </BorderGlow>
+  return <div
+    style={{
+      background: "#ffffff1a",
+      transform: 'translate3d(0, 0, 0.01px)',
+      boxShadow: 'rgba(0,0,0,0.1) 0 1px 2px, rgba(0,0,0,0.1) 0 2px 4px, rgba(0,0,0,0.1) 0 4px 8px, rgba(0,0,0,0.1) 0 8px 16px, rgba(0,0,0,0.1) 0 16px 32px, rgba(0,0,0,0.1) 0 32px 64px',
+    }}
+    className={joinClasses(
+      "size-full  border border-white/15 p-8 text-zinc-100 sm:p-12",
+      className,
+    )}
+    {...props}
+  >
+    {children}
+  </div>;
 
-  );
 }
-
-
 
 

@@ -15,4 +15,9 @@ export const appRoutes: AppRoute[] = [
     label: "Users",
     ariaLabel: "Go to users page",
   },
+  {
+    href:"/createUser",
+    label:"New user",
+    ariaLabel:"Create user form"
+  }
 ];
