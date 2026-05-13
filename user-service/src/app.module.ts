@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
-import { getRequiredEnv, getRequiredNumberEnv } from './env';
+import { getBooleanEnv, getRequiredEnv, getRequiredNumberEnv } from './env';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { getRequiredEnv, getRequiredNumberEnv } from './env';
       password: getRequiredEnv('DB_PASSWORD'),
       database: getRequiredEnv('DB_NAME'),
       autoLoadEntities: true,
-      synchronize: false,
+      synchronize: getBooleanEnv('DB_SYNCHRONIZE', true),
     }),
     ClientsModule.register([
       {
@@ -29,6 +30,7 @@ import { getRequiredEnv, getRequiredNumberEnv } from './env';
         },
       },
     ]),
+    UsersModule,
   ],
   controllers: [AppController],
 })

@@ -21,3 +21,13 @@ export function getRequiredNumberEnv(name: string): number {
 
   return value;
 }
+
+export function getBooleanEnv(name: string, fallback = false): boolean {
+  const value = process.env[name];
+
+  if (value == null || value.trim() === '') {
+    return fallback;
+  }
+
+  return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase());
+}
