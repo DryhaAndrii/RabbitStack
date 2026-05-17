@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://user-service:3001/:path*",
+        destination: "http://auth-service:3001/:path*",
       },
     ];
   },

@@ -1,19 +1,20 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ListUsersQueryDto } from './dto/list-users-query.dto';
 import { UsersService } from './users.service';
 
-@Controller('users')
+@Controller()
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get()
-  listUsers(@Query() query: ListUsersQueryDto) {
+  @MessagePattern({ cmd: 'users.list' })
+  listUsers(@Payload() query: ListUsersQueryDto) {
     return this.usersService.listUsers(query);
   }
 
-  @Post()
-  submitUserEmail(@Body() body: CreateUserDto) {
+  @MessagePattern({ cmd: 'users.create' })
+  submitUserEmail(@Payload() body: CreateUserDto) {
     return this.usersService.submitUserEmail(body);
   }
 }

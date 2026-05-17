@@ -60,7 +60,7 @@ export function useCreateUserForm() {
       const message =
         error instanceof Error
           ? error.message
-          : "Could not reach backend. Check nginx/user-service routing.";
+          : "Could not reach backend. Check nginx/auth-service routing.";
 
       setStatusType("error");
       setStatusMessage(message);

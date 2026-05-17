@@ -1,15 +1,15 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
-@Entity({ name: 'users' })
-export class User {
+@Entity({ name: 'accounts' })
+export class Account {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
   email!: string;
 
-  @Column({ name: 'password_hash', type: 'varchar', length: 255, nullable: true, select: false })
-  passwordHash!: string | null;
+  @Column({ name: 'password_hash', type: 'varchar', length: 255, select: false })
+  passwordHash!: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

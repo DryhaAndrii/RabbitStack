@@ -4,7 +4,7 @@ services:
     container_name: nginx
     depends_on:
       - frontend
-      - user-service
+      - auth-service
     ports:
       - "80:80"
     volumes:
@@ -39,12 +39,50 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    command: ["redis-server", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    mem_limit: 256m
+
+  auth-service:
+    build:
+      context: ./auth-service
+    container_name: auth-service
+    environment:
+      PORT: 3001
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      USER_SERVICE_QUEUE: user_queue
+      VEHICLE_SERVICE_QUEUE: vehicle_queue
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: rabbitstack
+      DB_USER: rabbitstack
+      DB_PASSWORD: rabbitstack
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
   user-service:
     build:
       context: ./user-service
     container_name: user-service
     env_file:
       - ./user-service/.env
+    environment:
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      RABBITMQ_QUEUE: user_queue
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: rabbitstack
+      DB_USER: rabbitstack
+      DB_PASSWORD: rabbitstack
     depends_on:
       postgres:
         condition: service_healthy
@@ -70,7 +108,7 @@ services:
     env_file:
       - ./frontend/.env
     depends_on:
-      - user-service
+      - auth-service
 
 volumes:
   postgres_data:

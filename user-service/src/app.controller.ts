@@ -1,23 +1,10 @@
-import { Controller, Get, Inject } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
+import { Controller } from '@nestjs/common';
+import { MessagePattern } from '@nestjs/microservices';
 
 @Controller()
 export class AppController {
-  constructor(
-    @Inject('VEHICLE_SERVICE')
-    private readonly vehicleServiceClient: ClientProxy,
-  ) {}
-
-  @Get()
+  @MessagePattern({ cmd: 'users.hello' })
   getHello(): string {
-    return 'Hello world';
-  }
-
-  @Get('vehicles/hello')
-  async getVehicleHello() {
-    return firstValueFrom(
-      this.vehicleServiceClient.send({ cmd: 'vehicles.hello' }, {}),
-    );
+    return 'User service microservice is running';
   }
 }
