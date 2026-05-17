@@ -73,8 +73,6 @@ services:
     build:
       context: ./user-service
     container_name: user-service
-    env_file:
-      - ./user-service/.env
     environment:
       RABBITMQ_URL: amqp://rabbitmq:5672
       RABBITMQ_QUEUE: user_queue
@@ -93,8 +91,14 @@ services:
     build:
       context: ./vehicle-service
     container_name: vehicle-service
-    env_file:
-      - ./vehicle-service/.env
+    environment:
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      RABBITMQ_QUEUE: vehicle_queue
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: rabbitstack
+      DB_USER: rabbitstack
+      DB_PASSWORD: rabbitstack
     depends_on:
       postgres:
         condition: service_healthy
@@ -105,8 +109,6 @@ services:
     build:
       context: ./frontend
     container_name: frontend
-    env_file:
-      - ./frontend/.env
     depends_on:
       - auth-service
 

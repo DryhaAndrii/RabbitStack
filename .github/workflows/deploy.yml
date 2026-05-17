@@ -29,9 +29,14 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key -p "${{ secrets.EC2_PORT }}" "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}" <<EOF
           set -e
+          if [ ! -d "${EC2_APP_DIR}/.git" ]; then
+            mkdir -p "$(dirname "${EC2_APP_DIR}")"
+            git clone https://github.com/DryhaAndrii/RabbitStack.git "${EC2_APP_DIR}"
+          fi
           cd "${EC2_APP_DIR}"
           git fetch origin
           git checkout main
           git pull --ff-only origin main
-          sudo docker compose up -d --build
+          sudo docker compose build --no-parallel
+          sudo docker compose up -d
           EOF
