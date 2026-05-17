@@ -8,7 +8,7 @@ export default function LoginPage() {
       <GlassContainer className="w-full max-w-xl">
         <div className="flex flex-col gap-8">
           <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-            Login or create an account
+            Authentication
           </h1>
 
           <Suspense
