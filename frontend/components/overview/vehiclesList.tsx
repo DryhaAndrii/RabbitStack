@@ -4,12 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import AnimatedList from "../surfaces/AnimatedList";
 import ElectricBorder from "../surfaces/ElectricBorder";
 
-type UsersResponse = {
+type VehiclesResponse = {
   items: Array<{
-    id: string;
-    email: string;
-    createdAt: string;
-    updatedAt: string;
+    id: number;
+    make: string | null;
+    model: string | null;
+    year: number | null;
+    user_id: string;
+    created_at: string;
+    updated_at: string;
   }>;
   meta: {
     page: number;
@@ -21,27 +24,27 @@ type UsersResponse = {
   };
 };
 
-async function fetchUsers(): Promise<UsersResponse> {
-  const response = await fetch("/api/users?page=1&limit=10");
+async function fetchVehicles(): Promise<VehiclesResponse> {
+  const response = await fetch("/api/vehicles?page=1&limit=10");
 
   if (!response.ok) {
-    throw new Error("Failed to load users");
+    throw new Error("Failed to load vehicles");
   }
 
   return response.json();
 }
 
-export default function UsersList() {
+export default function VehiclesList() {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["recentUsers"],
-    queryFn: fetchUsers,
+    queryKey: ["recentVehicles"],
+    queryFn: fetchVehicles,
   });
 
-  const userItems =
-    data?.items.map((user) => ({
-      id: user.id,
-      label: user.email,
-      href: `/users/${user.id}`,
+  const vehicleItems =
+    data?.items.map((vehicle) => ({
+      id: vehicle.id,
+      label: formatVehicleLabel(vehicle),
+      href: `/vehicles/${vehicle.id}`,
     })) ?? [];
 
   return (
@@ -54,24 +57,24 @@ export default function UsersList() {
       className="w-[300px] h-[350px] p-4"
     >
       <h1 className="text-xl font-semibold tracking-tight text-white ">
-        Recent users
+        Recent vehicles
       </h1>
       <div className="w-full h-[300px]">
         {isLoading ? (
           <div className="flex h-full items-center justify-center px-4 text-sm text-zinc-400">
-            Loading users...
+            Loading vehicles...
           </div>
         ) : isError ? (
           <div className="flex h-full items-center justify-center px-4 text-center text-sm text-rose-300">
-            Could not load users from the backend.
+            Could not load vehicles from the backend.
           </div>
-        ) : userItems.length === 0 ? (
+        ) : vehicleItems.length === 0 ? (
           <div className="flex h-full items-center justify-center px-4 text-sm text-zinc-400">
-            No users yet.
+            No vehicles yet.
           </div>
         ) : (
           <AnimatedList
-            items={userItems}
+            items={vehicleItems}
             onItemSelect={(item, index) => console.log(item, index)}
             showGradients={false}
             enableArrowNavigation
@@ -81,4 +84,12 @@ export default function UsersList() {
       </div>
     </ElectricBorder>
   );
+}
+
+function formatVehicleLabel(vehicle: VehiclesResponse["items"][number]) {
+  const make = vehicle.make ?? "Unknown";
+  const model = vehicle.model ?? "Unknown";
+  const year = vehicle.year ?? "Unknown";
+
+  return `${make} ${model} (${year})`;
 }

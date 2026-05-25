@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { getRequiredEnv, getRequiredNumberEnv } from './env';
+import { VehiclesModule } from './vehicles/vehicles.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { getRequiredEnv, getRequiredNumberEnv } from './env';
       autoLoadEntities: true,
       synchronize: false,
     }),
+    VehiclesModule,
   ],
   controllers: [AppController],
 })

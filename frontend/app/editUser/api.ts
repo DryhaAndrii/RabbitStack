@@ -1,62 +1,92 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ChangeEvent, FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type StatusType = "idle" | "success" | "error";
 
-type CreateUserResponse = {
-  message?: string | string[];
-  user?: {
-    id: string;
-    email: string;
-  };
+type UserDetailsData = {
+  id: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
-async function createUser(email: string): Promise<CreateUserResponse> {
-  const response = await fetch("/api/users", {
-    method: "POST",
+type UpdateUserResponse = {
+  message?: string | string[];
+  user?: UserDetailsData;
+};
+
+async function fetchUser(id: string): Promise<UserDetailsData> {
+  const response = await fetch(`/api/users/${id}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to load user");
+  }
+
+  return response.json() as Promise<UserDetailsData>;
+}
+
+async function updateUser(
+  userId: string,
+  email: string,
+): Promise<UpdateUserResponse> {
+  const response = await fetch(`/api/users/${userId}`, {
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ email }),
   });
 
-  const data = (await response.json()) as CreateUserResponse;
+  const data = (await response.json()) as UpdateUserResponse;
 
   if (!response.ok) {
     const backendMessage = Array.isArray(data.message)
       ? data.message[0]
       : data.message;
 
-    throw new Error(backendMessage || "Failed to save user");
+    throw new Error(backendMessage || "Failed to update user");
   }
 
   return data;
 }
 
-export function useCreateUserForm() {
+export function useEditUserForm(userId: string) {
   const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [statusType, setStatusType] = useState<StatusType>("idle");
   const [emailError, setEmailError] = useState<string | null>(null);
 
-  const createUserMutation = useMutation({
-    mutationFn: createUser,
+  const userQuery = useQuery({
+    queryKey: ["user-details", userId],
+    queryFn: () => fetchUser(userId),
+    enabled: userId.length > 0,
+  });
+
+  useEffect(() => {
+    if (!userQuery.data) {
+      return;
+    }
+
+    setEmail(userQuery.data.email);
+  }, [userQuery.data]);
+
+  const updateUserMutation = useMutation({
+    mutationFn: (nextEmail: string) => updateUser(userId, nextEmail),
     onSuccess: async (data) => {
       setStatusType("success");
       setStatusMessage(
         data.message
           ? `${data.message}${data.user?.email ? `: ${data.user.email}` : ""}`
-          : "User saved successfully",
+          : "User updated successfully",
       );
-      setEmail("");
 
+      await queryClient.invalidateQueries({ queryKey: ["user-details", userId] });
       await queryClient.invalidateQueries({ queryKey: ["recentUsers"] });
       await queryClient.invalidateQueries({ queryKey: ["users-page-list"] });
-      await queryClient.invalidateQueries({ queryKey: ["recentVehicles"] });
     },
     onError: (error) => {
       const message =
@@ -85,7 +115,14 @@ export function useCreateUserForm() {
     setEmailError(null);
     setStatusMessage(null);
     setStatusType("idle");
-    await createUserMutation.mutateAsync(normalizedEmail);
+
+    if (!userId) {
+      setStatusType("error");
+      setStatusMessage("User id is missing in the URL.");
+      return;
+    }
+
+    await updateUserMutation.mutateAsync(normalizedEmail);
   };
 
   return {
@@ -93,7 +130,9 @@ export function useCreateUserForm() {
     emailError,
     handleEmailChange,
     handleSubmit,
-    isSubmitting: createUserMutation.isPending,
+    isSubmitting: updateUserMutation.isPending,
+    isLoadingUser: userQuery.isLoading,
+    isUserError: userQuery.isError,
     statusMessage,
     statusType,
   };

@@ -10,6 +10,7 @@ import { AuthService } from './auth/auth.service';
 import { getBooleanEnv, getRequiredEnv, getRequiredNumberEnv } from './env';
 import { SessionService } from './sessions/session.service';
 import { UsersController } from './users/users.controller';
+import { VehiclesController } from './vehicles/vehicles.controller';
 
 @Module({
   imports: [
@@ -36,9 +37,20 @@ import { UsersController } from './users/users.controller';
           },
         },
       },
+      {
+        name: 'VEHICLE_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: [getRequiredEnv('RABBITMQ_URL')],
+          queue: getRequiredEnv('VEHICLE_SERVICE_QUEUE'),
+          queueOptions: {
+            durable: false,
+          },
+        },
+      },
     ]),
   ],
-  controllers: [AppController, AuthController, UsersController],
+  controllers: [AppController, AuthController, UsersController, VehiclesController],
   providers: [
     AuthService,
     SessionService,
