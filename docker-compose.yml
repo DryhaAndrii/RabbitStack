@@ -76,6 +76,7 @@ services:
     environment:
       RABBITMQ_URL: amqp://rabbitmq:5672
       RABBITMQ_QUEUE: user_queue
+      VEHICLE_SERVICE_QUEUE: vehicle_queue
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: rabbitstack

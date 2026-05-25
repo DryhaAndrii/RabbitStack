@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, {
   useRef,
   useState,
@@ -10,6 +12,14 @@ import React, {
   UIEvent,
 } from "react";
 import { motion, useInView } from "motion/react";
+
+export type AnimatedListItem =
+  | string
+  | {
+      id?: string | number;
+      label: string;
+      href?: string;
+    };
 
 interface AnimatedItemProps {
   children: ReactNode;
@@ -37,7 +47,7 @@ const AnimatedItem: React.FC<AnimatedItemProps> = ({
       initial={{ scale: 0.7, opacity: 0 }}
       animate={inView ? { scale: 1, opacity: 1 } : { scale: 0.7, opacity: 0 }}
       transition={{ duration: 0.2, delay }}
-      className="mb-4 cursor-pointer"
+      className="mb-3 cursor-pointer"
     >
       {children}
     </motion.div>
@@ -45,8 +55,8 @@ const AnimatedItem: React.FC<AnimatedItemProps> = ({
 };
 
 interface AnimatedListProps {
-  items?: string[];
-  onItemSelect?: (item: string, index: number) => void;
+  items?: AnimatedListItem[];
+  onItemSelect?: (item: AnimatedListItem, index: number) => void;
   showGradients?: boolean;
   enableArrowNavigation?: boolean;
   className?: string;
@@ -81,6 +91,7 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
   displayScrollbar = true,
   initialSelectedIndex = -1,
 }) => {
+  const router = useRouter();
   const listRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] =
     useState<number>(initialSelectedIndex);
@@ -93,7 +104,7 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
   }, []);
 
   const handleItemClick = useCallback(
-    (item: string, index: number) => {
+    (item: AnimatedListItem, index: number) => {
       setSelectedIndex(index);
       if (onItemSelect) {
         onItemSelect(item, index);
@@ -126,8 +137,15 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
       } else if (e.key === "Enter") {
         if (selectedIndex >= 0 && selectedIndex < items.length) {
           e.preventDefault();
+          const selectedItem = items[selectedIndex];
+
+          if (typeof selectedItem !== "string" && selectedItem.href) {
+            router.push(selectedItem.href);
+            return;
+          }
+
           if (onItemSelect) {
-            onItemSelect(items[selectedIndex], selectedIndex);
+            onItemSelect(selectedItem, selectedIndex);
           }
         }
       }
@@ -135,7 +153,7 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [items, selectedIndex, onItemSelect, enableArrowNavigation]);
+  }, [items, selectedIndex, onItemSelect, enableArrowNavigation, router]);
 
   useEffect(() => {
     if (!keyboardNav || selectedIndex < 0 || !listRef.current) return;
@@ -170,28 +188,24 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
         ref={listRef}
         className={`size-full overflow-y-auto p-4 ${
           displayScrollbar
-            ? "[&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-track]:bg-[#120F17] [&::-webkit-scrollbar-thumb]:bg-[#222] [&::-webkit-scrollbar-thumb]:rounded-[4px]"
+            ? "[&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-cyan-300/20 [&::-webkit-scrollbar-thumb]:rounded-[999px]"
             : "scrollbar-hide"
         }`}
         onScroll={handleScroll}
         style={{
           scrollbarWidth: displayScrollbar ? "thin" : "none",
-          scrollbarColor: "#222 #120F17",
+          scrollbarColor: "rgba(103, 232, 249, 0.24) transparent",
         }}
       >
         {items.map((item, index) => (
           <AnimatedItem
-            key={index}
+            key={getItemKey(item, index)}
             delay={0.1}
             index={index}
             onMouseEnter={() => handleItemMouseEnter(index)}
             onClick={() => handleItemClick(item, index)}
           >
-            <div
-              className={`p-4 bg-[#111] rounded-lg ${selectedIndex === index ? "bg-[#222]" : ""} ${itemClassName}`}
-            >
-              <p className="text-white m-0">{item}</p>
-            </div>
+            {renderItem(item, selectedIndex === index, itemClassName)}
           </AnimatedItem>
         ))}
       </div>
@@ -212,3 +226,46 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
 };
 
 export default AnimatedList;
+
+function renderItem(
+  item: AnimatedListItem,
+  isSelected: boolean,
+  itemClassName: string,
+) {
+  const href = typeof item === "string" ? undefined : item.href;
+  const label = typeof item === "string" ? item : item.label;
+  const classes = `group relative block overflow-hidden rounded-2xl border px-4 py-4 transition-all duration-200 ${
+    isSelected
+      ? "border-cyan-300/35 bg-linear-to-r from-cyan-300/18 via-slate-900/72 to-white/12 shadow-[0_0_0_1px_rgba(103,232,249,0.08),0_20px_40px_rgba(2,6,23,0.35)]"
+      : "border-white/10 bg-linear-to-r from-white/10 via-slate-950/58 to-cyan-400/8 hover:border-cyan-300/20 hover:bg-linear-to-r hover:from-white/14 hover:via-slate-900/68 hover:to-cyan-300/12"
+  } ${itemClassName}`;
+
+  const content = (
+    <>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(103,232,249,0.14),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.08),transparent_38%)] opacity-90" />
+      <div className="relative flex items-center justify-between gap-3">
+        <p className="m-0 text-sm font-medium leading-6 tracking-[0.01em] text-zinc-100">
+          {label}
+        </p>
+      </div>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={classes}>
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={classes}>{content}</div>;
+}
+
+function getItemKey(item: AnimatedListItem, index: number) {
+  if (typeof item === "string") {
+    return `${item}-${index}`;
+  }
+
+  return item.id ?? item.href ?? `${item.label}-${index}`;
+}
