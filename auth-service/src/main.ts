@@ -12,6 +12,6 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(getRequiredNumberEnv('PORT'));
+  await app.listen(getRequiredNumberEnv('PORT'), '0.0.0.0');
 }
 bootstrap();
