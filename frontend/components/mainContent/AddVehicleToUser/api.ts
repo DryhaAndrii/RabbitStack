@@ -48,7 +48,7 @@ async function createVehicle(
   return data;
 }
 
-export function useCreateVehicleForm(userId: string) {
+export function useAddVehicleToUserForm(userId: string) {
   const queryClient = useQueryClient();
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
@@ -69,6 +69,7 @@ export function useCreateVehicleForm(userId: string) {
       setModel("");
       setYear("");
 
+      await queryClient.invalidateQueries({ queryKey: ["recentVehicles"] });
       await queryClient.invalidateQueries({ queryKey: ["user-vehicles", userId] });
     },
     onError: (error) => {
@@ -106,12 +107,16 @@ export function useCreateVehicleForm(userId: string) {
       return;
     }
 
-    await createVehicleMutation.mutateAsync({
-      make: normalizeOptionalText(make),
-      model: normalizeOptionalText(model),
-      year: normalizeOptionalYear(year),
-      user_id: userId,
-    });
+    try {
+      await createVehicleMutation.mutateAsync({
+        make: normalizeOptionalText(make),
+        model: normalizeOptionalText(model),
+        year: normalizeOptionalYear(year),
+        user_id: userId,
+      });
+    } catch {
+      // The mutation onError handler already maps backend errors to form UI state.
+    }
   };
 
   return {

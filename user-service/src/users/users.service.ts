@@ -1,15 +1,11 @@
 import {
-  BadRequestException,
-  ConflictException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   Logger,
-  NotFoundException,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
-import { isUUID } from 'class-validator';
+import { isEmail, isUUID } from 'class-validator';
 import { firstValueFrom } from 'rxjs';
 import { QueryFailedError, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,6 +17,17 @@ import { User } from './entities/user.entity';
 type PostgresError = {
   code?: string;
 };
+
+function isStrictEmail(value: string) {
+  const domain = value.split('@')[1] ?? '';
+
+  return (
+    isEmail(value, { require_tld: true }) &&
+    domain.includes('.') &&
+    !domain.startsWith('.') &&
+    !domain.endsWith('.')
+  );
+}
 
 @Injectable()
 export class UsersService {
@@ -67,7 +74,7 @@ export class UsersService {
     const userId = payload.id.trim();
 
     if (!isUUID(userId, '4')) {
-      throw new BadRequestException('User id must be a valid UUID');
+      throw this.rpcException(400, 'User id must be a valid UUID');
     }
 
     const user = await this.usersRepository.findOne({
@@ -81,7 +88,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw this.rpcException(404, 'User not found');
     }
 
     return user;
@@ -91,13 +98,17 @@ export class UsersService {
     const userId = typeof userIdRaw === 'string' ? userIdRaw.trim() : '';
 
     if (!isUUID(userId, '4')) {
-      throw new BadRequestException('User id must be a valid UUID');
+      throw this.rpcException(400, 'User id must be a valid UUID');
     }
 
     const normalizedEmail = body?.email?.trim().toLowerCase() ?? '';
 
     if (normalizedEmail === '') {
-      throw new BadRequestException('Email is required');
+      throw this.rpcException(400, 'Email is required');
+    }
+
+    if (!isStrictEmail(normalizedEmail)) {
+      throw this.rpcException(400, 'Please provide a valid email address');
     }
 
     const user = await this.usersRepository.findOne({
@@ -111,7 +122,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw this.rpcException(404, 'User not found');
     }
 
     const existingUser = await this.usersRepository.findOne({
@@ -120,7 +131,7 @@ export class UsersService {
     });
 
     if (existingUser && existingUser.id !== userId) {
-      throw new ConflictException('A user with this email already exists');
+      throw this.rpcException(409, 'A user with this email already exists');
     }
 
     try {
@@ -145,11 +156,11 @@ export class UsersService {
         (error as QueryFailedError & { driverError?: PostgresError }).driverError
           ?.code === '23505'
       ) {
-        throw new ConflictException('A user with this email already exists');
+        throw this.rpcException(409, 'A user with this email already exists');
       }
 
       this.logger.error('Failed to update user', error instanceof Error ? error.stack : undefined);
-      throw new InternalServerErrorException('Failed to update user');
+      throw this.rpcException(500, 'Failed to update user');
     }
   }
 
@@ -157,7 +168,7 @@ export class UsersService {
     const userId = typeof userIdRaw === 'string' ? userIdRaw.trim() : '';
 
     if (!isUUID(userId, '4')) {
-      throw new BadRequestException('User id must be a valid UUID');
+      throw this.rpcException(400, 'User id must be a valid UUID');
     }
 
     const user = await this.usersRepository.findOne({
@@ -169,7 +180,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw this.rpcException(404, 'User not found');
     }
 
     try {
@@ -196,12 +207,20 @@ export class UsersService {
         'Failed to delete user',
         error instanceof Error ? error.stack : undefined,
       );
-      throw new InternalServerErrorException('Failed to delete user');
+      throw this.rpcException(500, 'Failed to delete user');
     }
   }
 
   async submitUserEmail(body: CreateUserDto) {
     const normalizedEmail = body.email.trim().toLowerCase();
+
+    if (normalizedEmail === '') {
+      throw this.rpcException(400, 'Email is required');
+    }
+
+    if (!isStrictEmail(normalizedEmail)) {
+      throw this.rpcException(400, 'Please provide a valid email address');
+    }
 
     const existingUser = await this.usersRepository.findOne({
       where: { email: normalizedEmail },
@@ -209,7 +228,7 @@ export class UsersService {
     });
 
     if (existingUser) {
-      throw new ConflictException('A user with this email already exists');
+      throw this.rpcException(409, 'A user with this email already exists');
     }
 
     try {
@@ -237,12 +256,36 @@ export class UsersService {
         (error as QueryFailedError & { driverError?: PostgresError }).driverError
           ?.code === '23505'
       ) {
-        throw new ConflictException('A user with this email already exists');
+        throw this.rpcException(409, 'A user with this email already exists');
       }
 
       this.logger.error('Failed to save user', error instanceof Error ? error.stack : undefined);
-      throw new InternalServerErrorException('Failed to save user');
+      throw this.rpcException(500, 'Failed to save user');
     }
+  }
+
+  private rpcException(statusCode: number, message: string) {
+    return new RpcException({
+      statusCode,
+      message,
+      error: this.getErrorLabel(statusCode),
+    });
+  }
+
+  private getErrorLabel(statusCode: number) {
+    if (statusCode === 400) {
+      return 'Bad Request';
+    }
+
+    if (statusCode === 404) {
+      return 'Not Found';
+    }
+
+    if (statusCode === 409) {
+      return 'Conflict';
+    }
+
+    return 'Internal Server Error';
   }
 
   private async emitUserCreatedEvent(userId: string) {

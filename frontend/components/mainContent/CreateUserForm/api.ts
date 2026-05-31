@@ -85,7 +85,12 @@ export function useCreateUserForm() {
     setEmailError(null);
     setStatusMessage(null);
     setStatusType("idle");
-    await createUserMutation.mutateAsync(normalizedEmail);
+
+    try {
+      await createUserMutation.mutateAsync(normalizedEmail);
+    } catch {
+      // The mutation onError handler already maps backend errors to form UI state.
+    }
   };
 
   return {

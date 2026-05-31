@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export type UserDetailsData = {
+export type UserInfoData = {
   id: string;
   email: string;
   createdAt: string;
@@ -17,22 +17,14 @@ type DeleteUserResponse = {
   };
 };
 
-async function fetchUserDetails(id: string): Promise<UserDetailsData> {
+async function fetchUserInfo(id: string): Promise<UserInfoData> {
   const response = await fetch(`/api/users/${id}`);
 
   if (!response.ok) {
     throw new Error("Failed to load user");
   }
 
-  return response.json() as Promise<UserDetailsData>;
-}
-
-export function useUserDetails(id: string) {
-  return useQuery({
-    queryKey: ["user-details", id],
-    queryFn: () => fetchUserDetails(id),
-    enabled: id.length > 0,
-  });
+  return response.json() as Promise<UserInfoData>;
 }
 
 async function deleteUser(id: string): Promise<DeleteUserResponse> {
@@ -53,6 +45,15 @@ async function deleteUser(id: string): Promise<DeleteUserResponse> {
   return data;
 }
 
+export function useUserInfo(userId: string) {
+  return useQuery({
+    queryKey: ["user-info", userId],
+    queryFn: () => fetchUserInfo(userId),
+    enabled: userId.length > 0,
+    retry: false,
+  });
+}
+
 export function useDeleteUser(userId: string) {
   const queryClient = useQueryClient();
 
@@ -62,6 +63,8 @@ export function useDeleteUser(userId: string) {
       await queryClient.invalidateQueries({ queryKey: ["recentUsers"] });
       await queryClient.invalidateQueries({ queryKey: ["users-page-list"] });
       await queryClient.invalidateQueries({ queryKey: ["recentVehicles"] });
+      queryClient.removeQueries({ queryKey: ["user-info", userId] });
+      queryClient.removeQueries({ queryKey: ["user-details", userId] });
     },
   });
 }

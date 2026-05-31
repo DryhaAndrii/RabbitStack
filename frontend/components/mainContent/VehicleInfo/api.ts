@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export type VehicleDetailsData = {
+export type VehicleInfoData = {
   id: number;
   make: string | null;
   model: string | null;
@@ -20,22 +20,14 @@ type DeleteVehicleResponse = {
   };
 };
 
-async function fetchVehicleDetails(id: string): Promise<VehicleDetailsData> {
+async function fetchVehicleInfo(id: string): Promise<VehicleInfoData> {
   const response = await fetch(`/api/vehicles/${id}`);
 
   if (!response.ok) {
     throw new Error("Failed to load vehicle");
   }
 
-  return response.json() as Promise<VehicleDetailsData>;
-}
-
-export function useVehicleDetails(id: string) {
-  return useQuery({
-    queryKey: ["vehicle-details", id],
-    queryFn: () => fetchVehicleDetails(id),
-    enabled: id.length > 0,
-  });
+  return response.json() as Promise<VehicleInfoData>;
 }
 
 async function deleteVehicle(id: string): Promise<DeleteVehicleResponse> {
@@ -56,6 +48,15 @@ async function deleteVehicle(id: string): Promise<DeleteVehicleResponse> {
   return data;
 }
 
+export function useVehicleInfo(vehicleId: string) {
+  return useQuery({
+    queryKey: ["vehicle-info", vehicleId],
+    queryFn: () => fetchVehicleInfo(vehicleId),
+    enabled: vehicleId.length > 0,
+    retry: false,
+  });
+}
+
 export function useDeleteVehicle(vehicleId: string) {
   const queryClient = useQueryClient();
 
@@ -63,7 +64,8 @@ export function useDeleteVehicle(vehicleId: string) {
     mutationFn: () => deleteVehicle(vehicleId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["recentVehicles"] });
-      await queryClient.invalidateQueries({ queryKey: ["user-vehicles"] });
+      queryClient.removeQueries({ queryKey: ["vehicle-info", vehicleId] });
+      queryClient.removeQueries({ queryKey: ["vehicle-details", vehicleId] });
     },
   });
 }

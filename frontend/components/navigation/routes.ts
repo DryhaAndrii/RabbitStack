@@ -11,12 +11,7 @@ export const appRoutes: AppRoute[] = [
     ariaLabel: "Go to home page",
   },
   {
-    href: "/users",
-    label: "Users",
-    ariaLabel: "Go to users page",
-  },
-  {
-    href: "/createUser",
+    href: "/?createUser=true",
     label: "New user",
     ariaLabel: "Create user form",
   },

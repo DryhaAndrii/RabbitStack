@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import AnimatedList from "../surfaces/AnimatedList";
-import ElectricBorder from "../surfaces/ElectricBorder";
 
 type UsersResponse = {
   items: Array<{
@@ -41,22 +40,15 @@ export default function UsersList() {
     data?.items.map((user) => ({
       id: user.id,
       label: user.email,
-      href: `/users/${user.id}`,
+      href: `/?userId=${user.id}`,
     })) ?? [];
 
   return (
-    <ElectricBorder
-      color="#7df9ff"
-      speed={1}
-      chaos={0.12}
-      thickness={2}
-      style={{ borderRadius: 16 }}
-      className="w-[300px] h-[350px] p-4"
-    >
+    <div className="relative flex min-h-[400px] w-[300px] self-stretch flex-col border border-cyan-300/25 bg-slate-950/35 p-4 shadow-[0_0_0_1px_rgba(125,249,255,0.06),0_18px_50px_rgba(0,0,0,0.28)] backdrop-blur-sm">
       <h1 className="text-xl font-semibold tracking-tight text-white ">
         Recent users
       </h1>
-      <div className="w-full h-[300px]">
+      <div className="mt-4 min-h-0 w-full flex-1">
         {isLoading ? (
           <div className="flex h-full items-center justify-center px-4 text-sm text-zinc-400">
             Loading users...
@@ -79,6 +71,6 @@ export default function UsersList() {
           />
         )}
       </div>
-    </ElectricBorder>
+    </div>
   );
 }

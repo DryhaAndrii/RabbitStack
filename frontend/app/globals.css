@@ -56,6 +56,10 @@ body {
   min-height: 100vh;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   background:
     radial-gradient(circle at top, rgba(125, 211, 252, 0.08), transparent 34%),

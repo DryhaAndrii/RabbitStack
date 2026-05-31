@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 type StatusType = "idle" | "success" | "error";
 
-type VehicleDetailsData = {
+type VehicleInfoData = {
   id: number;
   make: string | null;
   model: string | null;
@@ -25,17 +25,17 @@ type UpdateVehiclePayload = {
 
 type UpdateVehicleResponse = {
   message?: string | string[];
-  vehicle?: VehicleDetailsData;
+  vehicle?: VehicleInfoData;
 };
 
-async function fetchVehicle(id: string): Promise<VehicleDetailsData> {
+async function fetchVehicle(id: string): Promise<VehicleInfoData> {
   const response = await fetch(`/api/vehicles/${id}`);
 
   if (!response.ok) {
     throw new Error("Failed to load vehicle");
   }
 
-  return response.json() as Promise<VehicleDetailsData>;
+  return response.json() as Promise<VehicleInfoData>;
 }
 
 async function updateVehicle(
@@ -73,9 +73,10 @@ export function useEditVehicleForm(vehicleId: string) {
   const [statusType, setStatusType] = useState<StatusType>("idle");
 
   const vehicleQuery = useQuery({
-    queryKey: ["vehicle-details", vehicleId],
+    queryKey: ["vehicle-info", vehicleId],
     queryFn: () => fetchVehicle(vehicleId),
     enabled: vehicleId.length > 0,
+    retry: false,
   });
 
   useEffect(() => {
@@ -99,9 +100,10 @@ export function useEditVehicleForm(vehicleId: string) {
           : "Vehicle updated successfully",
       );
 
+      await queryClient.invalidateQueries({ queryKey: ["vehicle-info", vehicleId] });
       await queryClient.invalidateQueries({ queryKey: ["vehicle-details", vehicleId] });
-      await queryClient.invalidateQueries({ queryKey: ["user-vehicles", userId] });
       await queryClient.invalidateQueries({ queryKey: ["recentVehicles"] });
+      await queryClient.invalidateQueries({ queryKey: ["user-vehicles", userId] });
     },
     onError: (error) => {
       const message =
@@ -144,12 +146,16 @@ export function useEditVehicleForm(vehicleId: string) {
       return;
     }
 
-    await updateVehicleMutation.mutateAsync({
-      make: normalizeOptionalText(make),
-      model: normalizeOptionalText(model),
-      year: normalizeOptionalYear(year),
-      user_id: userId,
-    });
+    try {
+      await updateVehicleMutation.mutateAsync({
+        make: normalizeOptionalText(make),
+        model: normalizeOptionalText(model),
+        year: normalizeOptionalYear(year),
+        user_id: userId,
+      });
+    } catch {
+      // The mutation onError handler already maps backend errors to form UI state.
+    }
   };
 
   return {

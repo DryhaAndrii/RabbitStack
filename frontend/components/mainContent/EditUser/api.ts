@@ -61,9 +61,10 @@ export function useEditUserForm(userId: string) {
   const [emailError, setEmailError] = useState<string | null>(null);
 
   const userQuery = useQuery({
-    queryKey: ["user-details", userId],
+    queryKey: ["user-info", userId],
     queryFn: () => fetchUser(userId),
     enabled: userId.length > 0,
+    retry: false,
   });
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export function useEditUserForm(userId: string) {
           : "User updated successfully",
       );
 
+      await queryClient.invalidateQueries({ queryKey: ["user-info", userId] });
       await queryClient.invalidateQueries({ queryKey: ["user-details", userId] });
       await queryClient.invalidateQueries({ queryKey: ["recentUsers"] });
       await queryClient.invalidateQueries({ queryKey: ["users-page-list"] });
@@ -122,7 +124,11 @@ export function useEditUserForm(userId: string) {
       return;
     }
 
-    await updateUserMutation.mutateAsync(normalizedEmail);
+    try {
+      await updateUserMutation.mutateAsync(normalizedEmail);
+    } catch {
+      // The mutation onError handler already maps backend errors to form UI state.
+    }
   };
 
   return {
