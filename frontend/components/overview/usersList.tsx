@@ -66,7 +66,6 @@ export default function UsersList() {
             items={userItems}
             onItemSelect={(item, index) => console.log(item, index)}
             showGradients={false}
-            enableArrowNavigation
             displayScrollbar={false}
           />
         )}

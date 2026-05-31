@@ -126,6 +126,12 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
   useEffect(() => {
     if (!enableArrowNavigation) return;
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+
+      if (isInteractiveTarget(target)) {
+        return;
+      }
+
       if (e.key === "ArrowDown" || (e.key === "Tab" && !e.shiftKey)) {
         e.preventDefault();
         setKeyboardNav(true);
@@ -226,6 +232,23 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
 };
 
 export default AnimatedList;
+
+function isInteractiveTarget(target: HTMLElement | null) {
+  if (!target) {
+    return false;
+  }
+
+  const tagName = target.tagName;
+
+  return (
+    target.isContentEditable ||
+    tagName === "INPUT" ||
+    tagName === "TEXTAREA" ||
+    tagName === "SELECT" ||
+    tagName === "BUTTON" ||
+    tagName === "A"
+  );
+}
 
 function renderItem(
   item: AnimatedListItem,

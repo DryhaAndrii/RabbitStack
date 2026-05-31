@@ -95,7 +95,6 @@ export default function VehiclesList() {
             items={vehicleItems}
             onItemSelect={(item, index) => console.log(item, index)}
             showGradients={false}
-            enableArrowNavigation
             displayScrollbar={false}
           />
         )}
