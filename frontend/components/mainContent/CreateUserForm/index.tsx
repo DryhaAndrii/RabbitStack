@@ -58,7 +58,7 @@ export default function CreateUserForm() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <Button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || Boolean(emailError)}
               className="md:min-w-48"
             >
               {isSubmitting ? "Sending..." : "Create user"}

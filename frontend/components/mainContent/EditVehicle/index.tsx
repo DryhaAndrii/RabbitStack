@@ -11,6 +11,7 @@ import { useEditVehicleForm } from "./api";
 export default function EditVehicle() {
   const searchParams = useSearchParams();
   const vehicleId = searchParams.get("vehicleId") ?? "";
+  const selectedUserId = searchParams.get("userId") ?? "";
   const editVehicle = searchParams.get("editVehicle") === "true";
 
   const {
@@ -18,6 +19,7 @@ export default function EditVehicle() {
     model,
     year,
     userId,
+    yearError,
     handleMakeChange,
     handleModelChange,
     handleYearChange,
@@ -28,6 +30,7 @@ export default function EditVehicle() {
     statusMessage,
     statusType,
   } = useEditVehicleForm(vehicleId);
+  const resolvedUserId = userId || selectedUserId;
 
   if (!editVehicle || !vehicleId) {
     return null;
@@ -100,43 +103,71 @@ export default function EditVehicle() {
               label="Year"
               placeholder="2024"
               hint="Optional. Leave empty to store null."
+              error={yearError ?? undefined}
               value={year}
               onChange={handleYearChange}
               min="1900"
             />
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex gap-3">
+              <div className="flex w-full gap-3">
                 <Button
                   type="submit"
-                  disabled={isSubmitting || vehicleId === ""}
+                  disabled={isSubmitting || vehicleId === "" || Boolean(yearError)}
+                  className="flex-1 text-xs"
                 >
                   {isSubmitting ? "Saving..." : "Save vehicle"}
                 </Button>
 
                 <Link
-                  href={`/?vehicleId=${encodeURIComponent(vehicleId)}`}
-                  className="inline-flex h-12 items-center justify-center border border-white/15 bg-white/8 px-5 text-sm font-semibold uppercase tracking-[0.22em] text-zinc-100 transition-colors hover:bg-white/12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/45"
+                  href={buildUserPageHref(resolvedUserId)}
+                  className="inline-flex h-12 flex-1 items-center justify-center border border-white/15 bg-white/8 px-5 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-100 transition-colors hover:bg-white/12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/45"
+                >
+                  Back to user
+                </Link>
+
+                <Link
+                  href={buildVehiclePageHref(vehicleId, selectedUserId)}
+                  className="inline-flex h-12 flex-1 items-center justify-center border border-white/15 bg-white/8 px-5 text-xs font-semibold uppercase tracking-[0.22em] text-zinc-100 transition-colors hover:bg-white/12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/45"
                 >
                   Back to vehicle
                 </Link>
               </div>
-
-              {statusMessage ? (
-                <p
-                  className={
-                    statusType === "error"
-                      ? "text-sm text-rose-300"
-                      : "text-sm text-emerald-300"
-                  }
-                >
-                  {statusMessage}
-                </p>
-              ) : null}
             </div>
+            {statusMessage ? (
+              <p
+                className={
+                  statusType === "error"
+                    ? "text-sm text-rose-300"
+                    : "text-sm text-emerald-300"
+                }
+              >
+                {statusMessage}
+              </p>
+            ) : null}
           </form>
         )}
       </div>
     </GlassContainer>
   );
+}
+
+function buildVehiclePageHref(vehicleId: string, userId: string) {
+  const params = new URLSearchParams({
+    vehicleId,
+  });
+
+  if (userId) {
+    params.set("userId", userId);
+  }
+
+  return `/?${params.toString()}`;
+}
+
+function buildUserPageHref(userId: string) {
+  if (!userId) {
+    return "/";
+  }
+
+  return `/?userId=${encodeURIComponent(userId)}`;
 }

@@ -69,6 +69,7 @@ export function useEditVehicleForm(vehicleId: string) {
   const [model, setModel] = useState("");
   const [year, setYear] = useState("");
   const [userId, setUserId] = useState("");
+  const [yearError, setYearError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [statusType, setStatusType] = useState<StatusType>("idle");
 
@@ -89,6 +90,10 @@ export function useEditVehicleForm(vehicleId: string) {
     setYear(vehicleQuery.data.year === null ? "" : String(vehicleQuery.data.year));
     setUserId(vehicleQuery.data.user_id);
   }, [vehicleQuery.data]);
+
+  useEffect(() => {
+    setYearError(getYearError(year));
+  }, [year]);
 
   const updateVehicleMutation = useMutation({
     mutationFn: (payload: UpdateVehiclePayload) => updateVehicle(vehicleId, payload),
@@ -118,14 +123,17 @@ export function useEditVehicleForm(vehicleId: string) {
 
   const handleMakeChange = (event: ChangeEvent<HTMLInputElement>) => {
     setMake(event.target.value);
+    clearStatusMessage();
   };
 
   const handleModelChange = (event: ChangeEvent<HTMLInputElement>) => {
     setModel(event.target.value);
+    clearStatusMessage();
   };
 
   const handleYearChange = (event: ChangeEvent<HTMLInputElement>) => {
     setYear(event.target.value);
+    clearStatusMessage();
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -146,6 +154,12 @@ export function useEditVehicleForm(vehicleId: string) {
       return;
     }
 
+    if (yearError) {
+      setStatusType("error");
+      setStatusMessage(yearError);
+      return;
+    }
+
     try {
       await updateVehicleMutation.mutateAsync({
         make: normalizeOptionalText(make),
@@ -163,6 +177,7 @@ export function useEditVehicleForm(vehicleId: string) {
     model,
     year,
     userId,
+    yearError,
     handleMakeChange,
     handleModelChange,
     handleYearChange,
@@ -173,6 +188,13 @@ export function useEditVehicleForm(vehicleId: string) {
     statusMessage,
     statusType,
   };
+
+  function clearStatusMessage() {
+    if (statusMessage || statusType !== "idle") {
+      setStatusMessage(null);
+      setStatusType("idle");
+    }
+  }
 }
 
 function normalizeOptionalText(value: string) {
@@ -188,4 +210,28 @@ function normalizeOptionalYear(value: string) {
   }
 
   return Number(normalizedValue);
+}
+
+function getYearError(value: string) {
+  const normalizedValue = value.trim();
+
+  if (normalizedValue === "") {
+    return null;
+  }
+
+  if (!/^\d+$/.test(normalizedValue)) {
+    return "Year must contain digits only.";
+  }
+
+  const parsedYear = Number(normalizedValue);
+
+  if (!Number.isInteger(parsedYear)) {
+    return "Year must be a whole number.";
+  }
+
+  if (parsedYear < 1900) {
+    return "Year must be 1900 or later.";
+  }
+
+  return null;
 }

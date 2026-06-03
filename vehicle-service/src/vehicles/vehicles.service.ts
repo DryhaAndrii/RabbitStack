@@ -194,7 +194,7 @@ export class VehiclesService {
 
     const [vehicles, total] = await this.vehiclesRepository.findAndCount({
       where: userId === '' ? {} : { userId },
-      order: { createdAt: 'DESC' },
+      order: { updatedAt: 'DESC' },
       skip,
       take: limit,
     });

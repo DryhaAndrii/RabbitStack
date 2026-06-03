@@ -59,7 +59,7 @@ export default function VehiclesList() {
     data?.items.map((vehicle) => ({
       id: vehicle.id,
       label: formatVehicleLabel(vehicle),
-      href: `/?vehicleId=${vehicle.id}`,
+      href: buildVehicleHref(vehicle.id, userId),
     })) ?? [];
 
   return (
@@ -109,4 +109,16 @@ function formatVehicleLabel(vehicle: VehiclesResponse["items"][number]) {
   const year = vehicle.year ?? "Unknown";
 
   return `${make} ${model} (${year})`;
+}
+
+function buildVehicleHref(vehicleId: number, userId: string) {
+  const params = new URLSearchParams({
+    vehicleId: String(vehicleId),
+  });
+
+  if (userId) {
+    params.set("userId", userId);
+  }
+
+  return `/?${params.toString()}`;
 }

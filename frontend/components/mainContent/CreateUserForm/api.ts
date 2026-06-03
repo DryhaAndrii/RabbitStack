@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ChangeEvent, FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type StatusType = "idle" | "success" | "error";
 
@@ -43,6 +43,10 @@ export function useCreateUserForm() {
   const [statusType, setStatusType] = useState<StatusType>("idle");
   const [emailError, setEmailError] = useState<string | null>(null);
 
+  useEffect(() => {
+    setEmailError(getEmailError(email));
+  }, [email]);
+
   const createUserMutation = useMutation({
     mutationFn: createUser,
     onSuccess: async (data) => {
@@ -72,10 +76,7 @@ export function useCreateUserForm() {
 
   const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
-
-    if (emailError) {
-      setEmailError(null);
-    }
+    clearStatusMessage();
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -85,6 +86,15 @@ export function useCreateUserForm() {
     setEmailError(null);
     setStatusMessage(null);
     setStatusType("idle");
+
+    const nextEmailError = getEmailError(normalizedEmail);
+
+    if (nextEmailError) {
+      setEmailError(nextEmailError);
+      setStatusType("error");
+      setStatusMessage(nextEmailError);
+      return;
+    }
 
     try {
       await createUserMutation.mutateAsync(normalizedEmail);
@@ -102,4 +112,27 @@ export function useCreateUserForm() {
     statusMessage,
     statusType,
   };
+
+  function clearStatusMessage() {
+    if (statusMessage || statusType !== "idle") {
+      setStatusMessage(null);
+      setStatusType("idle");
+    }
+  }
+}
+
+function getEmailError(value: string) {
+  const normalizedValue = value.trim().toLowerCase();
+
+  if (normalizedValue === "") {
+    return "Email is required.";
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailPattern.test(normalizedValue)) {
+    return "Please provide a valid email address.";
+  }
+
+  return null;
 }

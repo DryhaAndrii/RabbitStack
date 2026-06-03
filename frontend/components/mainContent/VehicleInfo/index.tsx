@@ -11,6 +11,7 @@ export default function VehicleInfo() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const vehicleId = searchParams.get("vehicleId") ?? "";
+  const userId = searchParams.get("userId") ?? "";
   const editVehicle = searchParams.get("editVehicle") === "true";
   const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState(false);
   const { data, isLoading, isError } = useVehicleInfo(vehicleId);
@@ -53,7 +54,7 @@ export default function VehicleInfo() {
 
           <div className="flex flex-wrap gap-3">
             <Link
-              href={`/?vehicleId=${encodeURIComponent(vehicleId)}&editVehicle=true`}
+              href={buildVehiclePageHref(vehicleId, userId, true)}
               className="inline-flex h-12 items-center justify-center border border-cyan-300/30 bg-cyan-300/12 px-5 text-sm font-semibold uppercase tracking-[0.22em] text-cyan-100 transition-colors hover:bg-cyan-300/18 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/45 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Edit vehicle
@@ -151,4 +152,24 @@ function formatDate(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function buildVehiclePageHref(
+  vehicleId: string,
+  userId: string,
+  editVehicle: boolean,
+) {
+  const params = new URLSearchParams({
+    vehicleId,
+  });
+
+  if (userId) {
+    params.set("userId", userId);
+  }
+
+  if (editVehicle) {
+    params.set("editVehicle", "true");
+  }
+
+  return `/?${params.toString()}`;
 }
